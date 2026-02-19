@@ -64,6 +64,9 @@ Multi-language label support
 
 MIT License. See `LICENSE` for details.
 
----
+Go to website you will see:
+Screenshot 2026-02-19 193143.png
 
-> *BeforeYouBuy — Because what you put in your cart matte
+Then Screenshot 2026-02-19 194043.png
+
+Screenshot 2026-02-19 194103.png

@@ -1,10 +1,7 @@
-import google.generativeai as genai
-import os
-from dotenv import load_dotenv
+import streamlit as st
+from groq import Groq
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash-lite")
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 def get_ai_analysis(extracted_text):
     prompt = f"""
@@ -12,14 +9,19 @@ def get_ai_analysis(extracted_text):
 
     {extracted_text}
 
-    Provide the following in a clear format:
-    1. 🥗 HEALTH ANALYSIS - Identify harmful ingredients (sugar, sodium, preservatives, allergens)
-    2. ⚠️ HEALTH RISKS - What risks does this product pose?
-    3. 🌍 ECO IMPACT - Comment on packaging and environmental impact
-    4. ✅ HEALTHIER ALTERNATIVES - Suggest 3 better store-bought alternatives
-    5. 🍳 HOMEMADE RECIPE - Give a simple homemade version of this product
+    Provide the following:
+    1. HEALTH ANALYSIS - Identify harmful ingredients (sugar, sodium, preservatives, allergens)
+    2. HEALTH RISKS - What risks does this product pose?
+    3. ECO IMPACT - Comment on packaging and environmental impact
+    4. HEALTHIER ALTERNATIVES - Suggest 3 better store-bought alternatives
+    5. HOMEMADE RECIPE - Give a simple homemade version of this product
 
-    Be concise, friendly, and practical.
+    Be concise and practical.
     """
-    response = model.generate_content(prompt)
-    return response.text
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1024
+    )
+    return response.choices[0].message.content
+

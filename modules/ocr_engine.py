@@ -1,34 +1,28 @@
 import streamlit as st
-import google.generativeai as genai
+from groq import Groq
+import base64
 from PIL import Image
 import io
 
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.0-flash-lite")
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 def extract_text_from_image(image_file):
     image = Image.open(image_file)
-    
-    # Convert to RGB if needed
     if image.mode != "RGB":
         image = image.convert("RGB")
-    
-    # Resize if too large (reduces API usage)
-    max_size = (800, 800)
-    image.thumbnail(max_size, Image.LANCZOS)
-    
-    # Convert to bytes
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format='JPEG', quality=85)
-    img_byte_arr.seek(0)
-    
-    image_data = {
-        "mime_type": "image/jpeg",
-        "data": img_byte_arr.getvalue()
-    }
-    
-    response = model.generate_content([
-        "Extract all visible text from this product label or receipt image. Return only the raw text.",
-        image_data
-    ])
-    return response.text
+    image.thumbnail((800, 800), Image.LANCZOS)
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=85)
+    img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    response = client.chat.completions.create(
+        model="llama-3.2-90b-vision-preview",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}},
+                {"type": "text", "text": "Extract all text from this product label or bill image. Return only the raw text found."}
+            ]
+        }],
+        max_tokens=1024
+    )
+    return response.choices[0].message.content

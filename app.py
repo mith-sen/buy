@@ -14,49 +14,13 @@ st.markdown("""
     #MainMenu, footer, header { visibility: hidden; }
     .stApp { background: #07070f; color: #dddde8; }
 
-    /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background: #0c0c16 !important;
-        border-right: 1px solid #1a1a2e !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
-        color: #9999b0;
-        font-size: 14px;
-    }
-    /* Sidebar toggle arrow button */
-    [data-testid="collapsedControl"] {
-        color: #00d68f !important;
-        background: #0e0e1c !important;
-        border: 1px solid #1a1a2e !important;
-        border-radius: 0 8px 8px 0 !important;
-    }
+    [data-testid="stSidebar"] { background: #0c0c16 !important; border-right: 1px solid #1a1a2e !important; }
+    [data-testid="collapsedControl"] { color: #00d68f !important; background: #0e0e1c !important; border: 1px solid #1a1a2e !important; border-radius: 0 8px 8px 0 !important; }
 
-    /* ── Top bar ── */
-    .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px 0 0 0;
-        border-bottom: 1px solid #13131f;
-        margin-bottom: 0;
-    }
-    .top-title {
-        font-family: 'DM Serif Display', serif;
-        font-size: 36px;
-        color: #ffffff;
-        margin: 0;
-        letter-spacing: -0.5px;
-        line-height: 1;
-    }
+    .top-bar { text-align: center; padding: 20px 0 6px 0; border-bottom: 1px solid #13131f; }
+    .top-title { font-family: 'DM Serif Display', serif; font-size: 36px; color: #ffffff; margin: 0; letter-spacing: -0.5px; line-height: 1; }
     .top-title span { color: #00d68f; }
-    .top-quote {
-        font-size: 13px;
-        color: #3a3a50;
-        font-style: italic;
-        font-weight: 300;
-        margin: 6px 0 16px 0;
-        text-align: center;
-    }
+    .top-quote { font-size: 13px; color: #3a3a50; font-style: italic; font-weight: 300; margin: 6px 0 20px 0; text-align: center; }
 
     .setup-card { background: #0e0e1c; border: 1px solid #1a1a2e; border-radius: 24px; padding: 40px; max-width: 480px; margin: 40px auto; text-align: center; }
     .setup-title { font-family: 'DM Serif Display', serif; font-size: 28px; color: #fff; margin: 0 0 8px; }
@@ -89,7 +53,10 @@ st.markdown("""
     .bill-card p { font-size: 14px; color: #9999b0; line-height: 1.8; margin: 0; white-space: pre-line; }
     .savings-highlight { background: rgba(0,214,143,0.08); border: 1px solid rgba(0,214,143,0.2); border-radius: 12px; padding: 16px 20px; margin: 12px 0; font-size: 14px; color: #00d68f; }
 
-    .sidebar-section-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: #fff; margin: 0 0 16px; }
+    .clear-block { background: #0e0e1c; border: 1px solid #1a1a2e; border-radius: 20px; padding: 28px 32px; text-align: center; margin-top: 8px; }
+    .clear-block p { font-size: 14px; color: #55556a; margin: 0 0 20px 0; }
+
+    .sidebar-section-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: #fff; margin: 0 0 14px; }
     .history-item { background: #13131f; border: 1px solid #1a1a2e; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; font-size: 13px; color: #9999b0; }
     .history-date { font-size: 11px; color: #3a3a50; margin-bottom: 4px; }
     .bookmark-card { background: #13131f; border: 1px solid rgba(0,214,143,0.15); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
@@ -112,7 +79,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Sidebar — Bookmarks & History ────────────────────────────
+# ── Sidebar ───────────────────────────────────────────────────
 with st.sidebar:
     st.markdown('<div class="sidebar-section-title">Bookmarks</div>', unsafe_allow_html=True)
     bookmarks = st.session_state.get("bookmarks", [])
@@ -128,7 +95,7 @@ with st.sidebar:
                 st.markdown(f"**Ingredients:**\n\n{b['ingredients']}")
                 st.markdown(f"**Steps:**\n\n{b['howto']}")
     else:
-        st.markdown('<p style="color:#3a3a50;font-size:13px">No bookmarks yet. Scan a product and save a recipe!</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#3a3a50;font-size:13px">No bookmarks yet.</p>', unsafe_allow_html=True)
 
     st.markdown("<hr style='border-color:#1a1a2e;margin:20px 0'>", unsafe_allow_html=True)
 
@@ -146,13 +113,21 @@ with st.sidebar:
     else:
         st.markdown('<p style="color:#3a3a50;font-size:13px">No scans yet.</p>', unsafe_allow_html=True)
 
-# ── Top Title ─────────────────────────────────────────────────
+# ── Title ─────────────────────────────────────────────────────
 st.markdown("""
 <div class="top-bar">
     <h1 class="top-title">Before<span>You</span>Buy</h1>
 </div>
 <p class="top-quote">"Buy smart today, live healthier tomorrow."</p>
 """, unsafe_allow_html=True)
+
+# ── Helper: reset session ─────────────────────────────────────
+def reset_scan():
+    for key in ["last_scan","last_result","health_result","eco_result",
+                "unsafe_result","show_homemade","show_howto",
+                "homemade_info","howto_info","scan_type"]:
+        st.session_state[key] = None
+    st.rerun()
 
 # ── Step 1: Profile Setup ─────────────────────────────────────
 if "profile_done" not in st.session_state:
@@ -198,75 +173,79 @@ else:
     bmi_status = ("Underweight" if bmi < 18.5 else "Healthy" if bmi < 25 else "Overweight" if bmi < 30 else "Obese")
     bmi_color  = ("#f59e0b" if bmi < 18.5 else "#00d68f" if bmi < 25 else "#f59e0b" if bmi < 30 else "#ef4444")
 
-    st.markdown(f"""
-    <div class="info-bar">
-        <div class="info-bar-item">Hello, <span>{name}</span></div>
-        <div class="info-bar-item">BMI: <span style="color:{bmi_color}">{bmi} ({bmi_status})</span></div>
-        <div class="info-bar-item">{height} cm · {weight} kg</div>
-        <div class="info-bar-item">Diet: <span>{diet}</span></div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Show scan section only if no active scan result
+    if not st.session_state.get("last_scan"):
 
-    st.markdown('<div class="label">Choose Scan Method</div>', unsafe_allow_html=True)
-    method = st.radio("", ["Upload Product Image", "Scan Bill / Receipt", "Enter Ingredients as Text"],
-        horizontal=True, label_visibility="collapsed")
-    st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="info-bar">
+            <div class="info-bar-item">Hello, <span>{name}</span></div>
+            <div class="info-bar-item">BMI: <span style="color:{bmi_color}">{bmi} ({bmi_status})</span></div>
+            <div class="info-bar-item">{height} cm · {weight} kg</div>
+            <div class="info-bar-item">Diet: <span>{diet}</span></div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    if method == "Upload Product Image":
-        uploaded = st.file_uploader("Upload product label or packaging", type=["jpg","jpeg","png"])
-        if uploaded:
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.image(uploaded, use_column_width=True)
-            with col2:
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Analyze Product"):
-                    with st.spinner("Reading product..."):
-                        extracted_text = extract_text_from_image(uploaded)
-                    st.session_state.last_scan     = extracted_text
-                    st.session_state.scan_type     = "product"
-                    st.session_state.show_homemade = False
-                    st.session_state.show_howto    = False
-                    st.session_state.last_result   = None
-                    st.session_state.health_result = None
-                    st.session_state.eco_result    = None
-                    st.session_state.unsafe_result = None
+        st.markdown('<div class="label">Choose Scan Method</div>', unsafe_allow_html=True)
+        method = st.radio("", ["Upload Product Image", "Scan Bill / Receipt", "Enter Ingredients as Text"],
+            horizontal=True, label_visibility="collapsed")
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    elif method == "Scan Bill / Receipt":
-        uploaded = st.file_uploader("Upload your shopping bill or receipt", type=["jpg","jpeg","png"])
-        if uploaded:
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.image(uploaded, use_column_width=True)
-            with col2:
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Analyze Bill"):
-                    with st.spinner("Reading bill..."):
-                        extracted_text = extract_text_from_image(uploaded)
-                    st.session_state.last_scan     = extracted_text
-                    st.session_state.scan_type     = "bill"
-                    st.session_state.show_homemade = False
-                    st.session_state.show_howto    = False
-                    st.session_state.last_result   = None
+        if method == "Upload Product Image":
+            uploaded = st.file_uploader("Upload product label or packaging", type=["jpg","jpeg","png"])
+            if uploaded:
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.image(uploaded, use_column_width=True)
+                with col2:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("Analyze Product"):
+                        with st.spinner("Reading product..."):
+                            extracted_text = extract_text_from_image(uploaded)
+                        st.session_state.last_scan     = extracted_text
+                        st.session_state.scan_type     = "product"
+                        st.session_state.show_homemade = False
+                        st.session_state.show_howto    = False
+                        st.session_state.last_result   = None
+                        st.session_state.health_result = None
+                        st.session_state.eco_result    = None
+                        st.session_state.unsafe_result = None
+                        st.rerun()
 
-    elif method == "Enter Ingredients as Text":
-        text_input = st.text_area("Type or paste ingredients / product details", height=180)
-        if st.button("Analyze Text"):
-            st.session_state.last_scan     = text_input
-            st.session_state.scan_type     = "product"
-            st.session_state.show_homemade = False
-            st.session_state.show_howto    = False
-            st.session_state.last_result   = None
-            st.session_state.health_result = None
-            st.session_state.eco_result    = None
-            st.session_state.unsafe_result = None
+        elif method == "Scan Bill / Receipt":
+            uploaded = st.file_uploader("Upload your shopping bill or receipt", type=["jpg","jpeg","png"])
+            if uploaded:
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.image(uploaded, use_column_width=True)
+                with col2:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("Analyze Bill"):
+                        with st.spinner("Reading bill..."):
+                            extracted_text = extract_text_from_image(uploaded)
+                        st.session_state.last_scan     = extracted_text
+                        st.session_state.scan_type     = "bill"
+                        st.session_state.show_homemade = False
+                        st.session_state.show_howto    = False
+                        st.session_state.last_result   = None
+                        st.rerun()
+
+        elif method == "Enter Ingredients as Text":
+            text_input = st.text_area("Type or paste ingredients / product details", height=180)
+            if st.button("Analyze Text"):
+                st.session_state.last_scan     = text_input
+                st.session_state.scan_type     = "product"
+                st.session_state.show_homemade = False
+                st.session_state.show_howto    = False
+                st.session_state.last_result   = None
+                st.session_state.health_result = None
+                st.session_state.eco_result    = None
+                st.session_state.unsafe_result = None
+                st.rerun()
 
     # ── Results ───────────────────────────────────────────────
-    if "last_scan" in st.session_state and st.session_state.last_scan:
+    else:
         scan_text = st.session_state.last_scan
         scan_type = st.session_state.get("scan_type", "product")
-
-        st.markdown("<hr>", unsafe_allow_html=True)
 
         if not st.session_state.get("last_result"):
             with st.spinner("Analyzing..."):
@@ -285,7 +264,7 @@ else:
                     Give ONLY:
                     1. Packaging type and recyclability
                     2. Carbon footprint estimate
-                    3. Eco-friendly packaging alternatives
+                    3. Eco-friendly alternatives
                     4. Eco score out of 100
                     Keep it short and factual.
                     """)
@@ -295,7 +274,7 @@ else:
                     For each explain in ONE sentence why it is harmful.
                     Format:
                     - Ingredient Name: Why it is harmful
-                    If all are safe, say: "All ingredients appear to be safe."
+                    If all are safe say: "All ingredients appear to be safe."
                     Nothing else.
                     """)
                     st.session_state.health_result = health_result
@@ -303,7 +282,6 @@ else:
                     st.session_state.unsafe_result = unsafe_result
                     st.session_state.last_result   = health_result
                     save_scan(name, scan_text, health_result)
-
                 else:
                     bill_result = get_ai_analysis(f"""
                     User: Height {height}cm, Weight {weight}kg, BMI {bmi} ({bmi_status}), Diet: {diet}, Allergies: {allergies}
@@ -362,7 +340,6 @@ else:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Tabs — unique content each
             tab1, tab2, tab3 = st.tabs(["Health Analysis", "Eco Impact", "Unsafe Ingredients"])
             with tab1:
                 st.markdown(f'<div class="result-block"><h3>Health Analysis</h3><p>{health_result}</p></div>', unsafe_allow_html=True)
@@ -371,7 +348,6 @@ else:
             with tab3:
                 st.markdown(f'<div class="result-block"><h3>Unsafe Ingredients</h3><p>{unsafe_result}</p></div>', unsafe_allow_html=True)
 
-            # Make it Yourself section
             if st.session_state.get("show_homemade"):
                 st.markdown("<hr>", unsafe_allow_html=True)
                 st.markdown(f"""
@@ -380,7 +356,6 @@ else:
                     <p>{st.session_state.get('homemade_info', '')}</p>
                 </div>
                 """, unsafe_allow_html=True)
-
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
                     if st.button("How to Make it"):
@@ -394,7 +369,6 @@ else:
                             """)
                             st.session_state.show_howto = True
 
-            # How to Make section
             if st.session_state.get("show_howto"):
                 howto_info = st.session_state.get("howto_info", "")
                 st.markdown(f"""
@@ -403,7 +377,6 @@ else:
                     <p>{howto_info}</p>
                 </div>
                 """, unsafe_allow_html=True)
-
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
                     if st.button("Save to Bookmarks"):
@@ -446,18 +419,16 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
             with tab4:
-                # ── Clear / Scan Again ────────────────────────────────
-                st.markdown("<hr>", unsafe_allow_html=True)
-                col1, col2, col3 = st.columns([1, 2, 1])
-                with col2:
-                    if st.button("Scan Another Product"):
-                        st.session_state.last_scan     = None
-                        st.session_state.last_result   = None
-                        st.session_state.health_result = None
-                        st.session_state.eco_result    = None
-                        st.session_state.unsafe_result = None
-                        st.session_state.show_homemade = False
-                        st.session_state.show_howto    = False
-                        st.session_state.homemade_info = None
-                        st.session_state.howto_info    = None
-                        st.rerun()
+                st.markdown(f'<div class="bill-card"><h3>What to Buy Next Time</h3><p>{get_section("BETTER ALTERNATIVES")}</p></div>', unsafe_allow_html=True)
+
+        # ── Scan Again — always at the bottom ─────────────────
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="clear-block">
+            <p>Done reviewing? Go back and scan another product or bill.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("Scan Another Product"):
+                reset_scan()

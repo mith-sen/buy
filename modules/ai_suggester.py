@@ -19,7 +19,7 @@ def get_ai_analysis(extracted_text):
     Be concise and practical.
     """
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.2-90b-vision-preview",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1024
     )

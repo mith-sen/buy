@@ -4,7 +4,7 @@ from modules.ocr_engine import extract_text_from_image
 from modules.ai_suggester import get_ai_analysis
 from utils.firebase_ops import save_scan, get_scan_history
 
-st.set_page_config(page_title="BeforeYouBuy", page_icon="🛒", layout="wide")
+st.set_page_config(page_title="BeforeYouBuy", page_icon="🛒", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
@@ -13,14 +13,52 @@ st.markdown("""
     * { font-family: 'DM Sans', sans-serif; }
     #MainMenu, footer, header { visibility: hidden; }
     .stApp { background: #07070f; color: #dddde8; }
-    [data-testid="stSidebar"] { display: none; }
 
-    .hero { text-align: center; padding: 64px 20px 48px; border-bottom: 1px solid #13131f; }
-    .hero-title { font-family: 'DM Serif Display', serif; font-size: 56px; color: #ffffff; margin: 0 0 12px; letter-spacing: -1px; }
-    .hero-title span { color: #00d68f; }
-    .hero-quote { font-size: 15px; color: #55556a; font-style: italic; font-weight: 300; margin: 0; }
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: #0c0c16 !important;
+        border-right: 1px solid #1a1a2e !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+        color: #9999b0;
+        font-size: 14px;
+    }
+    /* Sidebar toggle arrow button */
+    [data-testid="collapsedControl"] {
+        color: #00d68f !important;
+        background: #0e0e1c !important;
+        border: 1px solid #1a1a2e !important;
+        border-radius: 0 8px 8px 0 !important;
+    }
 
-    .setup-card { background: #0e0e1c; border: 1px solid #1a1a2e; border-radius: 24px; padding: 40px; max-width: 480px; margin: 48px auto; text-align: center; }
+    /* ── Top bar ── */
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 0 0 0;
+        border-bottom: 1px solid #13131f;
+        margin-bottom: 0;
+    }
+    .top-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 36px;
+        color: #ffffff;
+        margin: 0;
+        letter-spacing: -0.5px;
+        line-height: 1;
+    }
+    .top-title span { color: #00d68f; }
+    .top-quote {
+        font-size: 13px;
+        color: #3a3a50;
+        font-style: italic;
+        font-weight: 300;
+        margin: 6px 0 16px 0;
+        text-align: center;
+    }
+
+    .setup-card { background: #0e0e1c; border: 1px solid #1a1a2e; border-radius: 24px; padding: 40px; max-width: 480px; margin: 40px auto; text-align: center; }
     .setup-title { font-family: 'DM Serif Display', serif; font-size: 28px; color: #fff; margin: 0 0 8px; }
     .setup-subtitle { font-size: 14px; color: #55556a; margin: 0 0 32px; }
 
@@ -51,14 +89,14 @@ st.markdown("""
     .bill-card p { font-size: 14px; color: #9999b0; line-height: 1.8; margin: 0; white-space: pre-line; }
     .savings-highlight { background: rgba(0,214,143,0.08); border: 1px solid rgba(0,214,143,0.2); border-radius: 12px; padding: 16px 20px; margin: 12px 0; font-size: 14px; color: #00d68f; }
 
-    .history-item { background: #0e0e1c; border: 1px solid #1a1a2e; border-radius: 14px; padding: 18px 22px; margin-bottom: 10px; font-size: 13px; color: #9999b0; }
-    .history-date { font-size: 11px; color: #3a3a50; margin-bottom: 6px; }
+    .sidebar-section-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: #fff; margin: 0 0 16px; }
+    .history-item { background: #13131f; border: 1px solid #1a1a2e; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; font-size: 13px; color: #9999b0; }
+    .history-date { font-size: 11px; color: #3a3a50; margin-bottom: 4px; }
+    .bookmark-card { background: #13131f; border: 1px solid rgba(0,214,143,0.15); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+    .bookmark-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .bookmark-desc { font-size: 12px; color: #55556a; }
 
-    .bookmark-card { background: #0e0e1c; border: 1px solid rgba(0,214,143,0.15); border-radius: 16px; padding: 20px 24px; margin-bottom: 10px; }
-    .bookmark-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px; }
-    .bookmark-desc { font-size: 13px; color: #55556a; }
-
-    .info-bar { display: flex; align-items: center; gap: 24px; padding: 14px 0; border-bottom: 1px solid #13131f; margin-bottom: 32px; flex-wrap: wrap; }
+    .info-bar { display: flex; align-items: center; gap: 24px; padding: 12px 0; border-bottom: 1px solid #13131f; margin-bottom: 28px; flex-wrap: wrap; }
     .info-bar-item { font-size: 13px; color: #55556a; }
     .info-bar-item span { color: #fff; font-weight: 500; }
 
@@ -69,49 +107,32 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] { background: transparent; color: #3a3a50; font-size: 13px; font-weight: 500; padding: 12px 24px; border-radius: 0; border-bottom: 2px solid transparent; }
     .stTabs [aria-selected="true"] { background: transparent !important; color: #00d68f !important; border-bottom: 2px solid #00d68f !important; }
 
-    hr { border-color: #13131f; margin: 32px 0; }
+    hr { border-color: #13131f; margin: 28px 0; }
     [data-testid="stFileUploader"] { background: #0e0e1c; border: 1px dashed #1a1a2e; border-radius: 16px; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Hero ─────────────────────────────────────────────────────
-st.markdown("""
-<div class="hero">
-    <h1 class="hero-title">Before<span>You</span>Buy</h1>
-    <p class="hero-quote">"Buy smart today, live healthier tomorrow."</p>
-</div>
-""", unsafe_allow_html=True)
-
-# ── Top right buttons ─────────────────────────────────────────
-col_space, col_bk, col_hist = st.columns([5, 1, 1])
-with col_bk:
-    show_bookmarks = st.button("Bookmarks")
-with col_hist:
-    show_history = st.button("History")
-
-# ── Bookmarks panel ───────────────────────────────────────────
-if show_bookmarks:
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown('<div class="label">Saved Recipes</div>', unsafe_allow_html=True)
+# ── Sidebar — Bookmarks & History ────────────────────────────
+with st.sidebar:
+    st.markdown('<div class="sidebar-section-title">Bookmarks</div>', unsafe_allow_html=True)
     bookmarks = st.session_state.get("bookmarks", [])
     if bookmarks:
         for i, b in enumerate(bookmarks):
             st.markdown(f"""
             <div class="bookmark-card">
-                <div class="bookmark-title">Recipe {i+1} — {b['product']}</div>
-                <div class="bookmark-desc">{b['ingredients'][:200]}...</div>
+                <div class="bookmark-title">Recipe {i+1}</div>
+                <div class="bookmark-desc">{b['product'][:50]}...</div>
             </div>
             """, unsafe_allow_html=True)
-            with st.expander(f"View full recipe {i+1}"):
-                st.markdown(b['howto'])
+            with st.expander(f"View recipe {i+1}"):
+                st.markdown(f"**Ingredients:**\n\n{b['ingredients']}")
+                st.markdown(f"**Steps:**\n\n{b['howto']}")
     else:
-        st.markdown('<div class="history-item" style="text-align:center;color:#3a3a50">No bookmarks yet.</div>', unsafe_allow_html=True)
-    st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown('<p style="color:#3a3a50;font-size:13px">No bookmarks yet. Scan a product and save a recipe!</p>', unsafe_allow_html=True)
 
-# ── History panel ─────────────────────────────────────────────
-if show_history:
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown('<div class="label">Scan History</div>', unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:#1a1a2e;margin:20px 0'>", unsafe_allow_html=True)
+
+    st.markdown('<div class="sidebar-section-title">History</div>', unsafe_allow_html=True)
     user_id = st.session_state.get("user_name", "User")
     history = get_scan_history(user_id)
     if history:
@@ -119,12 +140,19 @@ if show_history:
             st.markdown(f"""
             <div class="history-item">
                 <div class="history-date">Scan {i+1} · {scan.get('timestamp', '')}</div>
-                {str(scan.get('ai_result', ''))[:300]}...
+                {str(scan.get('ai_result', ''))[:150]}...
             </div>
             """, unsafe_allow_html=True)
     else:
-        st.markdown('<div class="history-item" style="text-align:center;color:#3a3a50">No scans yet.</div>', unsafe_allow_html=True)
-    st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown('<p style="color:#3a3a50;font-size:13px">No scans yet.</p>', unsafe_allow_html=True)
+
+# ── Top Title ─────────────────────────────────────────────────
+st.markdown("""
+<div class="top-bar">
+    <h1 class="top-title">Before<span>You</span>Buy</h1>
+</div>
+<p class="top-quote">"Buy smart today, live healthier tomorrow."</p>
+""", unsafe_allow_html=True)
 
 # ── Step 1: Profile Setup ─────────────────────────────────────
 if "profile_done" not in st.session_state:
@@ -252,27 +280,24 @@ else:
                     3. Health score out of 100
                     Keep it short and direct.
                     """)
-
                     eco_result = get_ai_analysis(f"""
                     Product: {scan_text}
-                    Give ONLY the environmental impact:
+                    Give ONLY:
                     1. Packaging type and recyclability
                     2. Carbon footprint estimate
                     3. Eco-friendly packaging alternatives
                     4. Eco score out of 100
                     Keep it short and factual.
                     """)
-
                     unsafe_result = get_ai_analysis(f"""
                     Product: {scan_text}
-                    List the TOP 4-5 most unsafe or harmful ingredients in this product.
-                    For each, explain in ONE sentence why it is harmful.
+                    List TOP 4-5 most unsafe ingredients in this product.
+                    For each explain in ONE sentence why it is harmful.
                     Format:
                     - Ingredient Name: Why it is harmful
-                    If all ingredients are safe, just say: "All ingredients appear to be safe."
+                    If all are safe, say: "All ingredients appear to be safe."
                     Nothing else.
                     """)
-
                     st.session_state.health_result = health_result
                     st.session_state.eco_result    = eco_result
                     st.session_state.unsafe_result = unsafe_result
@@ -285,13 +310,9 @@ else:
                     Bill: {scan_text}
                     Provide these 4 sections with exact headers:
                     BILL SUMMARY:
-                    (explain in simple language)
                     HEALTH IMPACT:
-                    (health impact for this person)
                     COST SAVINGS:
-                    (where money could be saved)
                     BETTER ALTERNATIVES:
-                    (healthier or cheaper alternatives)
                     """)
                     st.session_state.last_result = bill_result
                     save_scan(name, scan_text, bill_result)
@@ -334,15 +355,14 @@ else:
                         st.session_state.homemade_info = get_ai_analysis(f"""
                         Product: {scan_text}
                         List ONLY the ingredients needed to make a healthier homemade version.
-                        Format as a clean bullet list. No intro, no explanation. Just ingredients.
-                        Example:
-                        - 2 cups whole wheat flour
-                        - 1 tbsp olive oil
+                        Clean bullet list only. No intro, no explanation.
+                        - ingredient 1
+                        - ingredient 2
                         """)
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # Tabs with unique content
+            # Tabs — unique content each
             tab1, tab2, tab3 = st.tabs(["Health Analysis", "Eco Impact", "Unsafe Ingredients"])
             with tab1:
                 st.markdown(f'<div class="result-block"><h3>Health Analysis</h3><p>{health_result}</p></div>', unsafe_allow_html=True)
@@ -368,10 +388,9 @@ else:
                             st.session_state.howto_info = get_ai_analysis(f"""
                             Product: {scan_text}
                             Give ONLY step by step instructions to make a healthier homemade version.
-                            Format:
                             Step 1: ...
                             Step 2: ...
-                            No intro, no explanation, just the steps.
+                            No intro, just steps.
                             """)
                             st.session_state.show_howto = True
 
@@ -422,7 +441,7 @@ else:
                 st.markdown(f"""
                 <div class="bill-card">
                     <h3>Potential Savings</h3>
-                    <div class="savings-highlight">Here is where you could have saved money!</div>
+                    <div class="savings-highlight">Here is where you could have saved!</div>
                     <p>{get_section("COST SAVINGS")}</p>
                 </div>
                 """, unsafe_allow_html=True)

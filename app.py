@@ -446,4 +446,18 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
             with tab4:
-                st.markdown(f'<div class="bill-card"><h3>What to Buy Next Time</h3><p>{get_section("BETTER ALTERNATIVES")}</p></div>', unsafe_allow_html=True)
+                # ── Clear / Scan Again ────────────────────────────────
+                st.markdown("<hr>", unsafe_allow_html=True)
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    if st.button("Scan Another Product"):
+                        st.session_state.last_scan     = None
+                        st.session_state.last_result   = None
+                        st.session_state.health_result = None
+                        st.session_state.eco_result    = None
+                        st.session_state.unsafe_result = None
+                        st.session_state.show_homemade = False
+                        st.session_state.show_howto    = False
+                        st.session_state.homemade_info = None
+                        st.session_state.howto_info    = None
+                        st.rerun()

@@ -14,13 +14,14 @@ def extract_text_from_image(image_file):
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG", quality=85)
     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{
             "role": "user",
             "content": [
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}},
-                {"type": "text", "text": "Extract all text from this product label or bill image. Return only the raw text found."}
+                {"type": "text", "text": "Extract all text from this product label or receipt image. Return only the raw text found."}
             ]
         }],
         max_tokens=1024

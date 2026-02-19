@@ -6,13 +6,13 @@ BeforeYouBuy is an AI-powered tool that analyzes product labels and shopping bil
 
 ---
 
-## 🚩 The Problem
+## The Problem
 
 Consumers buy packaged products daily without understanding what's in them, which ingredients are harmful, or how their choices affect their health and wallet. Product labels are full of jargon — and shopping bills offer zero health context.
 
 ---
 
-## ✅ What It Does
+##  What It Does
 
 **Product Label Analysis**
 - Detects unsafe or harmful ingredients
@@ -28,7 +28,7 @@ Consumers buy packaged products daily without understanding what's in them, whic
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -41,7 +41,7 @@ Consumers buy packaged products daily without understanding what's in them, whic
 
 ---
 
-## 🗺️ Roadmap
+##  Roadmap
 
 Camera-based label scanning
 Personalized health profiles (allergies, dietary goals)
@@ -51,7 +51,7 @@ Multi-language label support
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repo
 2. Create a feature branch 
@@ -60,7 +60,7 @@ Multi-language label support
 
 ---
 
-## 📄 License
+## License
 
 MIT License. See `LICENSE` for details.
 

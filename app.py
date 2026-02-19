@@ -6,7 +6,7 @@ from utils.firebase_ops import save_scan, get_scan_history
 # ─── Page Config ───────────────────────────────────────────
 st.set_page_config(
     page_title="BeforeYouBuy",
-    page_icon="🛒",
+    page_icon="logo.png",
     layout="wide"
 )
 

@@ -3,345 +3,338 @@ from modules.ocr_engine import extract_text_from_image
 from modules.ai_suggester import get_ai_analysis
 from utils.firebase_ops import save_scan, get_scan_history
 
-# ─── Page Config ───────────────────────────────────────────
-st.set_page_config(
-    page_title="BeforeYouBuy",
-    page_icon="🛒",
-    layout="wide"
-)
+st.set_page_config(page_title="BeforeYouBuy", page_icon="🛒", layout="wide")
 
-# ─── Custom CSS ────────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
 
-    * { font-family: 'Space Grotesk', sans-serif; }
-
-    .stApp {
-        background: #0a0a0f;
-        color: #e8e8f0;
-    }
-
-    /* Hide Streamlit branding */
+    * { font-family: 'DM Sans', sans-serif; }
     #MainMenu, footer, header { visibility: hidden; }
 
-    /* Hero Section */
+    .stApp { background: #080810; color: #e2e2ea; }
+
+    [data-testid="stSidebar"] {
+        background: #0c0c16;
+        border-right: 1px solid #18182a;
+        padding-top: 20px;
+    }
+
+    /* Hero */
     .hero {
-        background: linear-gradient(135deg, #0d0d1a 0%, #0a1628 50%, #0d1a0d 100%);
-        border: 1px solid #1a1a2e;
-        border-radius: 24px;
-        padding: 60px 40px;
+        padding: 80px 0 60px 0;
         text-align: center;
-        margin-bottom: 40px;
-        position: relative;
-        overflow: hidden;
     }
-    .hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at 30% 50%, rgba(0,200,83,0.05) 0%, transparent 50%),
-                    radial-gradient(circle at 70% 50%, rgba(0,100,255,0.05) 0%, transparent 50%);
-        animation: pulse 8s ease-in-out infinite;
-    }
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 1; }
+    .hero-eyebrow {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #00d68f;
+        margin-bottom: 20px;
     }
     .hero-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 64px;
-        font-weight: 800;
-        background: linear-gradient(135deg, #00c853, #00e5ff, #00c853);
-        background-size: 200% auto;
+        font-family: 'DM Serif Display', serif;
+        font-size: 72px;
+        font-weight: 400;
+        line-height: 1.05;
+        color: #ffffff;
+        margin: 0 0 20px 0;
+        letter-spacing: -1px;
+    }
+    .hero-title span {
+        background: linear-gradient(135deg, #00d68f, #00b4d8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: shine 3s linear infinite;
-        margin: 0;
-        line-height: 1.1;
     }
-    @keyframes shine {
-        0% { background-position: 0% center; }
-        100% { background-position: 200% center; }
-    }
-    .hero-subtitle {
-        font-size: 18px;
-        color: #6b7280;
-        margin-top: 16px;
+    .hero-desc {
+        font-size: 17px;
+        color: #6b6b80;
         font-weight: 300;
-        letter-spacing: 0.5px;
-    }
-    .hero-badge {
-        display: inline-block;
-        background: rgba(0,200,83,0.1);
-        border: 1px solid rgba(0,200,83,0.3);
-        color: #00c853;
-        padding: 6px 16px;
-        border-radius: 100px;
-        font-size: 13px;
-        font-weight: 500;
-        margin-bottom: 20px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.7;
     }
 
-    /* Cards */
-    .card {
-        background: #111118;
-        border: 1px solid #1e1e2e;
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 16px;
+    /* Score cards */
+    .scores-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin: 32px 0;
+    }
+    .score-card {
+        background: #0e0e1c;
+        border: 1px solid #1c1c2e;
+        border-radius: 20px;
+        padding: 28px 24px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
         transition: border-color 0.3s;
     }
-    .card:hover { border-color: #00c853; }
+    .score-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+    }
+    .score-card.green::after { background: linear-gradient(90deg, #00d68f, transparent); }
+    .score-card.amber::after { background: linear-gradient(90deg, #f59e0b, transparent); }
+    .score-card.red::after   { background: linear-gradient(90deg, #ef4444, transparent); }
 
-    /* Health Score */
-    .score-container {
-        text-align: center;
-        padding: 30px;
-        border-radius: 16px;
-        margin: 10px 0;
-    }
-    .score-high {
-        background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,200,83,0.05));
-        border: 1px solid rgba(0,200,83,0.3);
-    }
-    .score-medium {
-        background: linear-gradient(135deg, rgba(255,165,0,0.1), rgba(255,165,0,0.05));
-        border: 1px solid rgba(255,165,0,0.3);
-    }
-    .score-low {
-        background: linear-gradient(135deg, rgba(255,50,50,0.1), rgba(255,50,50,0.05));
-        border: 1px solid rgba(255,50,50,0.3);
-    }
-    .score-number {
-        font-family: 'Syne', sans-serif;
-        font-size: 72px;
-        font-weight: 800;
+    .score-value {
+        font-family: 'DM Serif Display', serif;
+        font-size: 56px;
         line-height: 1;
+        font-weight: 400;
     }
-    .score-high .score-number { color: #00c853; }
-    .score-medium .score-number { color: #ffa500; }
-    .score-low .score-number { color: #ff3232; }
-    .score-label {
-        font-size: 14px;
-        color: #6b7280;
-        margin-top: 8px;
+    .score-card.green .score-value { color: #00d68f; }
+    .score-card.amber .score-value { color: #f59e0b; }
+    .score-card.red   .score-value { color: #ef4444; }
+
+    .score-title {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 2px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        color: #44445a;
+        margin-top: 10px;
+    }
+
+    /* Result cards */
+    .result-card {
+        background: #0e0e1c;
+        border: 1px solid #1c1c2e;
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 16px;
+        line-height: 1.8;
+        color: #c8c8d8;
+        font-size: 15px;
+    }
+    .result-card h3 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 22px;
+        font-weight: 400;
+        color: #ffffff;
+        margin: 0 0 16px 0;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #1c1c2e;
+    }
+
+    /* Input section */
+    .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #44445a;
+        margin-bottom: 16px;
     }
 
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        background: #111118;
-        border-radius: 12px;
-        padding: 4px;
-        gap: 4px;
-        border: 1px solid #1e1e2e;
+        background: transparent;
+        gap: 0;
+        border-bottom: 1px solid #1c1c2e;
+        padding: 0;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        color: #6b7280;
+        background: transparent;
+        color: #44445a;
+        font-size: 13px;
         font-weight: 500;
+        letter-spacing: 0.5px;
+        padding: 12px 24px;
+        border-radius: 0;
+        border-bottom: 2px solid transparent;
     }
     .stTabs [aria-selected="true"] {
-        background: #00c853 !important;
-        color: #000 !important;
+        background: transparent !important;
+        color: #00d68f !important;
+        border-bottom: 2px solid #00d68f !important;
     }
 
-    /* Upload area */
-    .stFileUploader {
-        background: #111118;
-        border: 2px dashed #1e1e2e;
-        border-radius: 16px;
-        padding: 20px;
-    }
-    .stFileUploader:hover {
-        border-color: #00c853;
-    }
-
-    /* Buttons */
+    /* Button */
     .stButton > button {
-        background: linear-gradient(135deg, #00c853, #00a846);
-        color: #000;
+        background: #00d68f;
+        color: #080810;
         font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
         border: none;
         border-radius: 12px;
-        padding: 12px 32px;
-        font-size: 15px;
-        letter-spacing: 0.5px;
-        transition: all 0.3s;
+        padding: 14px 32px;
         width: 100%;
+        transition: all 0.2s;
     }
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,200,83,0.3);
+        background: #00c07f;
+        transform: translateY(-1px);
+        box-shadow: 0 12px 32px rgba(0,214,143,0.2);
     }
 
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: #0d0d14;
-        border-right: 1px solid #1e1e2e;
+    /* Radio */
+    .stRadio [data-testid="stMarkdownContainer"] p {
+        font-size: 14px;
+        color: #8888a0;
     }
-
-    /* Radio buttons */
-    .stRadio > div {
-        background: #111118;
-        border-radius: 12px;
-        padding: 16px;
-        border: 1px solid #1e1e2e;
+    div[role="radiogroup"] {
         gap: 8px;
     }
-
-    /* Loading animation */
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    div[role="radiogroup"] label {
+        background: #0e0e1c;
+        border: 1px solid #1c1c2e;
+        border-radius: 10px;
+        padding: 10px 18px;
+        color: #8888a0;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    div[role="radiogroup"] label:hover {
+        border-color: #00d68f;
+        color: #ffffff;
     }
 
-    /* Result section */
-    .result-header {
-        font-family: 'Syne', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        color: #e8e8f0;
-        margin-bottom: 24px;
+    /* History card */
+    .history-card {
+        background: #0e0e1c;
+        border: 1px solid #1c1c2e;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 12px;
+    }
+    .history-meta {
+        font-size: 12px;
+        color: #44445a;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
     }
 
     /* Divider */
-    hr { border-color: #1e1e2e; }
+    hr { border-color: #1c1c2e; margin: 40px 0; }
+
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: #0e0e1c;
+        border: 1px dashed #1c1c2e;
+        border-radius: 16px;
+        padding: 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── Hero Section ──────────────────────────────────────────
+# ── Sidebar ─────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("#### Profile")
+    user_name = st.text_input("Name", value="User")
+    allergies = st.multiselect("Allergies",
+        ["Gluten", "Nuts", "Dairy", "Soy", "Eggs", "Shellfish"])
+    diet = st.selectbox("Diet",
+        ["Regular", "Vegan", "Vegetarian", "Diabetic", "Low-sodium"])
+
+# ── Hero ────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
-    <div class="hero-badge">⚡ AI Powered</div>
-    <h1 class="hero-title">BeforeYouBuy</h1>
-    <p class="hero-subtitle">Scan any product or bill — get instant health risks, eco impact & smarter alternatives</p>
+    <div class="hero-eyebrow">AI-Powered Analysis</div>
+    <h1 class="hero-title">Know what you buy.<br><span>Before you buy it.</span></h1>
+    <p class="hero-desc">Upload a product label or shopping bill and get instant health, safety, and environmental insights.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ─── Sidebar ───────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("### 👤 Your Profile")
-    user_name = st.text_input("Name", value="User")
-    allergies = st.multiselect("Known Allergies",
-        ["Gluten", "Nuts", "Dairy", "Soy", "Eggs", "Shellfish"])
-    diet = st.selectbox("Diet Type",
-        ["Regular", "Vegan", "Vegetarian", "Diabetic", "Low-sodium"])
-    st.divider()
-    st.markdown("<small style='color:#6b7280'>Your preferences personalize the AI analysis</small>", unsafe_allow_html=True)
-
-# ─── Input Method ──────────────────────────────────────────
-st.markdown("#### 📤 Choose how to scan")
+# ── Input ───────────────────────────────────────────────────
+st.markdown('<div class="section-label">Scan Method</div>', unsafe_allow_html=True)
 input_method = st.radio("", 
-    ["📷 Upload Product Image", "🧾 Upload Bill / Receipt", "✍️ Paste Text Manually"],
+    ["Upload Product Image", "Upload Bill / Receipt", "Paste Text Manually"],
     horizontal=True, label_visibility="collapsed")
 
-st.divider()
+st.markdown("<br>", unsafe_allow_html=True)
 
 extracted_text = ""
 
-# ─── Image Upload ──────────────────────────────────────────
-if input_method == "📷 Upload Product Image":
-    uploaded_file = st.file_uploader("Drop your product label image here", 
-        type=["jpg", "jpeg", "png"])
+if input_method == "Upload Product Image":
+    uploaded_file = st.file_uploader("Upload product label", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         col1, col2 = st.columns([1, 2])
         with col1:
-            st.image(uploaded_file, caption="Uploaded", use_column_width=True)
+            st.image(uploaded_file, use_column_width=True)
         with col2:
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            if st.button("🔍 Analyze Product"):
-                with st.spinner("🤖 Reading your product..."):
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Analyze Product"):
+                with st.spinner("Reading image..."):
                     extracted_text = extract_text_from_image(uploaded_file)
-                st.success("✅ Done!")
 
-elif input_method == "🧾 Upload Bill / Receipt":
-    uploaded_file = st.file_uploader("Drop your shopping bill here",
-        type=["jpg", "jpeg", "png"])
+elif input_method == "Upload Bill / Receipt":
+    uploaded_file = st.file_uploader("Upload your bill", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         col1, col2 = st.columns([1, 2])
         with col1:
-            st.image(uploaded_file, caption="Bill", use_column_width=True)
+            st.image(uploaded_file, use_column_width=True)
         with col2:
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            if st.button("🔍 Analyze Bill"):
-                with st.spinner("🤖 Reading your bill..."):
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Analyze Bill"):
+                with st.spinner("Reading bill..."):
                     extracted_text = extract_text_from_image(uploaded_file)
-                st.success("✅ Done!")
 
-elif input_method == "✍️ Paste Text Manually":
-    extracted_text = st.text_area("Paste ingredients or bill text here", height=200)
-    st.button("🔍 Analyze Text")
+elif input_method == "Paste Text Manually":
+    extracted_text = st.text_area("Paste ingredients or bill text", height=200)
+    st.button("Analyze Text")
 
-# ─── AI Analysis Results ───────────────────────────────────
+# ── Results ─────────────────────────────────────────────────
 if extracted_text:
-    st.divider()
-    st.markdown('<div class="result-header">📊 Analysis Results</div>', unsafe_allow_html=True)
+    st.markdown("<hr>", unsafe_allow_html=True)
 
-    with st.spinner("🧠 AI is analyzing..."):
+    with st.spinner("Analyzing..."):
         context = f"User allergies: {allergies}, Diet: {diet}\n\n"
         result = get_ai_analysis(context + extracted_text)
 
-    # Health Score (random for now, can be parsed from AI later)
     import random
-    score = random.randint(30, 90)
-    score_class = "score-high" if score >= 70 else "score-medium" if score >= 40 else "score-low"
-    score_emoji = "✅" if score >= 70 else "⚠️" if score >= 40 else "❌"
+    health = random.randint(30, 90)
+    eco = random.randint(30, 85)
+    safety = random.randint(40, 95)
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(f"""
-        <div class="score-container {score_class}">
-            <div class="score-number">{score}</div>
-            <div class="score-label">{score_emoji} Health Score</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        eco = random.randint(30, 85)
-        eco_class = "score-high" if eco >= 70 else "score-medium" if eco >= 40 else "score-low"
-        st.markdown(f"""
-        <div class="score-container {eco_class}">
-            <div class="score-number">{eco}</div>
-            <div class="score-label">🌍 Eco Score</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col3:
-        safety = random.randint(40, 95)
-        safety_class = "score-high" if safety >= 70 else "score-medium" if safety >= 40 else "score-low"
-        st.markdown(f"""
-        <div class="score-container {safety_class}">
-            <div class="score-number">{safety}</div>
-            <div class="score-label">🛡️ Safety Score</div>
-        </div>
-        """, unsafe_allow_html=True)
+    def score_class(s):
+        return "green" if s >= 70 else "amber" if s >= 40 else "red"
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="scores-row">
+        <div class="score-card {score_class(health)}">
+            <div class="score-value">{health}</div>
+            <div class="score-title">Health Score</div>
+        </div>
+        <div class="score-card {score_class(eco)}">
+            <div class="score-value">{eco}</div>
+            <div class="score-title">Eco Score</div>
+        </div>
+        <div class="score-card {score_class(safety)}">
+            <div class="score-value">{safety}</div>
+            <div class="score-title">Safety Score</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Results in tabs
-    tab1, tab2, tab3 = st.tabs(["🥗 Health & Risks", "🌍 Eco Impact", "💡 Alternatives & Recipe"])
+    tab1, tab2, tab3 = st.tabs(["Health & Risks", "Eco Impact", "Alternatives & Recipe"])
     with tab1:
-        st.markdown(f'<div class="card">{result}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="result-card"><h3>Health Analysis</h3>{result}</div>', unsafe_allow_html=True)
     with tab2:
-        st.markdown(f'<div class="card">{result}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="result-card"><h3>Environmental Impact</h3>{result}</div>', unsafe_allow_html=True)
     with tab3:
-        st.markdown(f'<div class="card">{result}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="result-card"><h3>Better Choices</h3>{result}</div>', unsafe_allow_html=True)
 
-    # Save to Firebase
     save_scan(user_name, extracted_text, result)
-    st.success("✅ Scan saved to your history!")
 
-# ─── Scan History ──────────────────────────────────────────
-with st.expander("📜 View My Scan History"):
+# ── History ─────────────────────────────────────────────────
+st.markdown("<hr>", unsafe_allow_html=True)
+with st.expander("Scan History"):
     history = get_scan_history(user_name)
     if history:
         for i, scan in enumerate(reversed(history)):
-            st.markdown(f'<div class="card"><b>Scan {i+1}</b> — {scan["timestamp"]}<br><br>{scan["ai_result"]}</div>', unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="history-card">
+                <div class="history-meta">Scan {i+1} &nbsp;·&nbsp; {scan['timestamp']}</div>
+                {scan['ai_result']}
+            </div>
+            """, unsafe_allow_html=True)
     else:
-        st.info("No scans yet. Upload a product to get started!")
+        st.markdown('<div class="history-card" style="color:#44445a;text-align:center">No scans yet</div>', unsafe_allow_html=True)

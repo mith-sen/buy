@@ -15,7 +15,7 @@ def extract_text_from_image(image_file):
     image.save(buffer, format="JPEG", quality=85)
     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     response = client.chat.completions.create(
-        model="llama-3.2-90b-vision-preview",
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{
             "role": "user",
             "content": [

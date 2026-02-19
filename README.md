@@ -67,10 +67,10 @@ MIT License. See `LICENSE` for details.
 ## How the App Works
 
 ### Step 1 — Open the Website
-![Step 1](Screenshot 2026-02-19 193143.png)
+![Step 1](Screenshot%202026-02-19%20193143.png)
 
 ### Step 2 — Enter Product
-![Step 2](Screenshot 2026-02-19 194043.png)
+![Step 2](Screenshot%202026-02-19%20194043.png)
 
 ### Step 3 — View Result
-![Step 3](Screenshot 2026-02-19 194103.png)
+![Step 3](Screenshot%202026-02-19%20194103.png)

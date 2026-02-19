@@ -1,12 +1,13 @@
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
+import streamlit as st
+import json
 
 def initialize_firebase():
     if not firebase_admin._apps:
-        cred = credentials.Certificate("serviceAccountKey.json")
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': 'beforeyoubuy-d8bd1.appspot.com'
-        })
+        firebase_creds = json.loads(st.secrets["FIREBASE_CREDENTIALS"])
+        cred = credentials.Certificate(firebase_creds)
+        firebase_admin.initialize_app(cred)
     db = firestore.client()
     return db
 
